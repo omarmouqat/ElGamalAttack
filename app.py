@@ -90,7 +90,7 @@ if message:
     if recovered_key is not None:
         st.success(f"Recovered Private Key: {recovered_key}")
         decrypted = decryption(ciphertext, recovered_key, public_key)
-        st.write("### 🔓 Decrypted Message:")
+        st.write("### 🔓 Decrypted Message: ")
         st.success(decrypted)
     else:
         st.error("Failed to recover the private key.")

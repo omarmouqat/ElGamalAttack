@@ -18,7 +18,7 @@ def baby_step_giant_step(public_key):
         gamma = (gamma * g_inv) % p
     return None
 
-# Attack 2: Pohlig–Hellman
+
 def dlog_mod_prime_power(g, y, p, q, e):
     x = 0
     g_inv = mod_inverse(g, p)

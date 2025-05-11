@@ -1,43 +1,166 @@
 import streamlit as st
 import ElGamal
+from random import randint
+import ast
+from sympy import isprime
 import Attacks
 
-
-# Streamlit interface
-st.title("🔐 ElGamal Decryption using Attacks")
-
-# Generate keys
-p = 467
-
-# Input
-message = st.text_input("Enter a message to encrypt:")
-Private_key = st.number_input("Enter the private key (Leave 0 for random):", min_value=0, max_value=p-2,value=0)
-private_key = Private_key
-public_key, private_key = ElGamal.generate_key(private_key, p)
-attack_method = st.selectbox("Choose an attack to recover the private key:", ["Baby-step Giant-step", "Pohlig–Hellman"])
-
-if message:
-    # Encrypt message
-    ciphertext = ElGamal.encrypte(message, public_key)
-    st.write("### 🔒 Ciphertext:")
-    st.write(str(ciphertext))
-
-    # Try attack
-    if attack_method == "Baby-step Giant-step":
-        recovered_key = Attacks.baby_step_giant_step(public_key)
-    else:
-        recovered_key = Attacks.pohlig_hellman(public_key)
-
-    if recovered_key is not None:
-        st.success(f"Recovered Private Key: {recovered_key}")
-        print("### 🔑 Recovered Key: ", recovered_key)
-        print("### 🔑 Private Key: ", private_key)
-        decrypted = ElGamal.decrypte(ciphertext, recovered_key, public_key)
-        st.write("### 🔓 Decrypted Message: ")
-        st.success(decrypted)
-        st.success(ElGamal.decrypte(ciphertext, private_key, public_key))
+def Encrypt():
+    st.write("### 🔒 Encryption ")
+    clear_text = st.text_input("Enter a message to encrypt:")
+    p_col, g_col,y_col = st.columns(3)
+    with p_col:
+        p = st.number_input("P:",value=0)
+    with g_col:
+        g = st.number_input("G:",value=0)
+    with y_col:
+        y = st.number_input("Y:",value=0)
+    
+    
+    if st.button("Encrypt"):   
+        if not clear_text:
+            st.error("Please enter a message to encrypt.")
+        elif not p:
+            st.error("Please enter a prime number.")
+        else:   
+            if not isprime(p):
+                st.error("p should be a prime number.")
+                return
+            
+            ciphertext = ElGamal.encrypte(clear_text, (p, g, y))
+            st.write("#### 🔒 Ciphertext:")
+            st.success(ciphertext)
+            
         
-    else:
-        st.error("Failed to recover the private key.")
 
 
+def Decrypt():
+    st.write("### 🔒 Decryption:")
+    ciphertext = st.text_input("Enter a message to decrypt:")
+    p_col,g_col,y_col,x_col = st.columns(4)
+    with p_col:
+        p = st.number_input("P:",value=0)
+    with g_col:
+        g = st.number_input("G:",value=0)
+    with y_col:
+        y = st.number_input("Y:",value=0)
+    with x_col:
+        x = st.number_input("Private Key:",value=0)
+        
+
+    if st.button("Decrypt"):
+        if not p:
+            st.error("Please enter a prime number.")
+        else:   
+            if not isprime(p):
+                st.error("p should be a prime number.")
+                return
+            if x == 0:
+                x =randint(1, p - 2)
+            if x >= p:
+                st.error("Private key should be less than p.")
+                return
+            if x < 1:
+                st.error("Private key should be greater than 0.")
+                return
+            
+           
+            ciphertext = ast.literal_eval(ciphertext)
+            if not isinstance(ciphertext[0], int) or not isinstance(ciphertext[1], list):
+                st.error("Invalid ciphertext format. The first element should be an integer and the second element should be a list.")
+                return
+            public_key = (p, g, y)
+            cleartext = ElGamal.decrypte(ciphertext=ciphertext,private_key=x,public_key=public_key)
+            st.write("#### 🔓 Decrypted Message:")
+            st.success(cleartext)
+   
+
+def Attack():
+    st.write("### 🕵🏻‍♂️ Attack:")
+    ciphertext = st.text_input("Enter a message to attack:")
+    attack_method = st.selectbox("Choose an attack to recover the private key:", ["Baby-step Giant-step", "Pohlig–Hellman"])
+    
+    
+    p_col,g_col,y_col = st.columns(3)
+    with p_col:
+        p = st.number_input("P:",value=0)
+    with g_col:
+        g = st.number_input("G:",value=0)
+    with y_col:
+        y = st.number_input("Y:",value=0)
+        
+
+    if st.button("Attack"):
+        if not p:
+            st.error("Please enter a prime number.")
+        else:   
+            if not isprime(p):
+                st.error("p should be a prime number.")
+                return
+            
+            
+        ciphertext = ast.literal_eval(ciphertext)
+        if not isinstance(ciphertext[0], int) or not isinstance(ciphertext[1], list):
+            st.error("Invalid ciphertext format. The first element should be an integer and the second element should be a list.")
+            return
+
+        if attack_method == "Baby-step Giant-step":
+            recovered_key = Attacks.baby_step_giant_step((p, g, y))
+        elif attack_method == "Pohlig–Hellman":
+            recovered_key = Attacks.pohlig_hellman((p, g, y))
+        
+        if recovered_key is not None:
+            st.success(f"Recovered Private Key: {recovered_key}")
+            decrypted = ElGamal.decrypte(ciphertext, recovered_key, (p, g, y))
+            st.write("### 🔓 Decrypted Message: ")
+            st.success(decrypted)
+        else:
+            st.error("Failed to recover the private key.")
+            return
+
+
+
+
+
+def GenerateKey():
+    st.write("### 🔑 Key Generation:")
+    p_col, x_col = st.columns(2)
+    with p_col:
+        p = st.number_input("Enter a prime number (p):",value=0)
+    with x_col:
+        x = st.number_input("Enter the private key (Leave 0 for random):",value=0)
+    
+    if st.button("Generate Key"):   
+        if not p:
+            st.error("Please enter a prime number.")
+        else:   
+            if not isprime(p):
+                st.error("p should be a prime number.")
+                return
+            if x == 0:
+                x =randint(1, p - 2)
+            if x >= p:
+                st.error("Private key should be less than p.")
+                return
+            if x < 1:
+                st.error("Private key should be greater than 0.")
+                return
+            
+            public_key, private_key = ElGamal.generate_key(x, p)
+            st.write(f"#### 🔑 Public Key:          (p={str(public_key[0])}, g={str(public_key[1])}, y={str(public_key[2])})")
+            st.write(f"#### 🔑 Private Key:         {private_key}")
+
+
+
+
+if __name__ == "__main__":
+    st.title("🔐 ElGamal Algorithm")
+    selection =st.segmented_control("", options=["Keys","Encrypt", "Decrypt","Attack"],selection_mode="single",default="Keys")
+    if selection == "Encrypt":
+        Encrypt()
+    elif selection == "Keys":
+        GenerateKey()
+    elif selection == "Decrypt":
+        Decrypt()
+    elif selection == "Attack":
+        Attack()

@@ -68,7 +68,7 @@ The app will:
 
 
 ## 👤 Author
-- Omar Mouqata
+- Omar Mouqat
 - Oussama Mahjour
 ## 🎓 Master's in Software Engineering and decision-making
 ## 📍 Faculty of Sciences, Rabat

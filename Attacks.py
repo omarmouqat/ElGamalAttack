@@ -4,7 +4,8 @@ from sympy.ntheory.modular import crt
 import math
 
 
-def baby_step_giant_step(g, y, p):
+def baby_step_giant_step(public_key):
+    p, g, y = public_key
     m = math.isqrt(p) + 1
     table = {}
     for j in range(m):
@@ -31,7 +32,8 @@ def dlog_mod_prime_power(g, y, p, q, e):
                 break
     return x
 
-def pohlig_hellman(g, y, p):
+def pohlig_hellman(public_key):
+    p, g, y = public_key
     factors = factorint(p - 1)
     congruences = []
     moduli = []

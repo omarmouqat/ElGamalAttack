@@ -24,6 +24,7 @@ def decryption(ciphertext, private_key, public_key):
     return ''.join(decrypted_message)
 
 # Attack 1: Baby-step Giant-step
+#Attack
 def baby_step_giant_step(g, y, p):
     m = math.isqrt(p) + 1
     table = {}

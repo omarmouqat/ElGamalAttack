@@ -26,6 +26,7 @@ def decrypte(ciphertext, private_key, public_key):
     c1 = ciphertext[0]
     for c2 in ciphertext[1]:
         s = pow(c1, private_key, p) 
+        #Test
         s_inv = mod_inverse(s, p)  
         m = (c2 * s_inv) % p
         decrypted_message+= chr(m)
